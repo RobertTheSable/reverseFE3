@@ -19,13 +19,9 @@ void Mystery::ApplyFixes()
     uint8_t lord_class = romData[LoROMToPC(chapter_reinforcements)];
     if(!(class_list[lord_class].mounted))
     {
-        //std::cout << std::hex << (unsigned int)lord_class << std::endl;
-        
         unsigned int lord_mov_ptr = *((unsigned int *)&romData[ m_RomData.getPCAddress("MOV_TABLE") + (lord_class * 3) ]);
         lord_mov_ptr &= 0xFFFFFF;
-        //std::cout << std::hex << lord_mov_ptr << std::endl;
         uint8_t mountain_mov = romData[LoROMToPC(lord_mov_ptr) + 7];
-        //std::cout << std::hex << (unsigned int)mountain_mov << std::endl;
         if(mountain_mov == 0xFF)
         {
             romData[LoROMToPC(lord_mov_ptr) + 7] = 4;
@@ -105,10 +101,6 @@ void Mystery::ApplyFixes()
         uint8_t chapter = romData[offset];
         uint8_t char_replacement1 = 0xFF;
         uint8_t char_replacement2 = 0xFF;
-//         if( chapter == 0x2c )
-//         {
-//             std::cout << std::hex << (int)romData[offset+2] << std::endl;
-//         }
         if(memchr (&romData[m_RomData.getPCAddress("CHAPTER_TABLE")], chapter, 21) != NULL)
         {
             char_replacement1 = characters[romData[offset+1]].book1_replacement;
@@ -127,9 +119,10 @@ void Mystery::ApplyFixes()
         {
             romData[offset+2] = char_replacement2;
         }
-        //*
+        // Need to parse events to get text pointers
+        // Which we need to swap portraits
+        // Which we need to fix things like the bug with Samto/Navarre in Book 2.
         unsigned short event = *((unsigned short*)&romData[offset+4]);
-        //std::cout << "Event 0x"<< std::hex  << event;
         unsigned int event_offset = (*((unsigned int*)&romData[m_RomData.getPCAddress(0x8b8a93 + (event*2))]) & 0xFFFF ) + 0x8b0000;
         bool parsing = true;
         while(parsing)
@@ -154,17 +147,13 @@ void Mystery::ApplyFixes()
                 if(event_code == 0x02)
                 {
                     int text_idx = *((unsigned short*)&romData[event_pc_addr + 1]);
-                    //int text_idx = romData[event_pc_addr + 1];
                     ParseText(text_idx, chapter);
                 }
                 next_index += evt.get_length(event_code);
             }
             event_offset += next_index;
             
-        }//*/
-        
-        //std::cout << " " << event_offset << std::endl;
-        
+        }
         
         offset += TALK_LENGTH;
     }
@@ -211,10 +200,6 @@ void Mystery::ApplyFixes()
             {
                 romData[offset+1] = char_replacement1;
                 int text_idx = *((unsigned short*)&romData[offset + 5]);
-//                 if(romData[offset+1] == 0x2B)
-//                 {
-//                     std::cout << std::hex << (int)chapter << std::endl;
-//                 }
                 ParseText(text_idx, chapter);
             }
         }
@@ -311,10 +296,6 @@ void Mystery::ParseText(int index, int chapter)
                                 {
                                     //book 2
                                     uint8_t new_name = characters[old_name].book2_replacement;
-//                                     if(index == 0x192)
-//                                     {
-//                                         std::cout << std::hex << (int)old_name << std::endl;
-//                                     }
                                     if(new_name != 0xFF)
                                     {
                                         romData[pc_offset +2] = characters[new_name].book2_portrait;

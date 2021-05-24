@@ -52,10 +52,8 @@ int Mystery::SetUnits(unsigned int offset, uint8_t replacement, uint8_t original
         Unit_Data *temp = (Unit_Data*)&(romData[currentoffset]);
         
         int test = 0;
-        //cout << test << endl;
         while(temp->unit != 0xFF)
         {
-            //cout << test << endl;
             if(temp->name == original && already_assigned.count(currentoffset) == 0)
             {
                 if(replacement == 0x30)
@@ -86,12 +84,8 @@ int Mystery::SetUnits(unsigned int offset, uint8_t replacement, uint8_t original
                 uint8_t luck_test = unit->lck;
                 bool minerva_cutscene = (temp->portrait == 0x1E && temp->name != 0x1E) || (temp->portrait == 0x4c && temp->name != 0x4C);
                 bool fake_navarre = (temp->unit == 0x79 && temp->name == 0x12);
-//                 if( temp->unit > 0x32)
-//                 {
-//                     cout << characters[temp->name].name << endl;
-//                         
-//                 }
-                        uint8_t temp_class = (temp->mountedClass == 0xFF || temp->mountedClass == 0x0) ? temp->unit_class : temp->mountedClass ;
+                // Non-mounting characters have 0xFF for their mounted class, except Jeorge who has 0x0 for some reason.s
+                uint8_t temp_class = (temp->mountedClass == 0xFF || temp->mountedClass == 0x0) ? temp->unit_class : temp->mountedClass;
                 uint8_t target_class = (book == 1) ? characters[original].book1_class : characters[original].book2_class;
                 bool class_matches = (temp_class == target_class);
                 if(!class_matches)
@@ -106,16 +100,12 @@ int Mystery::SetUnits(unsigned int offset, uint8_t replacement, uint8_t original
                     }
                     
                 }
-                if(class_matches && luck_test != 0xFF && !minerva_cutscene)//temp_class == target_class && 
+                if(class_matches && luck_test != 0xFF && !minerva_cutscene)
                 {
                     uint8_t assign_class;
                     uint8_t original_class = !(temp->mountedClass == 0xFF || temp->mountedClass == 0x00) ? temp->mountedClass : temp->unit_class;
                     if( book == 1)
                     {
-//                         if(unit_stats <= 0x32)
-//                         {
-//                             
-//                         }
                         *unit = characters[replacement].book1_stats;
                         assign_class = ReplaceClass(original_class, characters[replacement].book1_class, replacement);
                         temp->portrait = characters[replacement].book1_portrait;
@@ -128,7 +118,7 @@ int Mystery::SetUnits(unsigned int offset, uint8_t replacement, uint8_t original
                             //some cutscene character in book 2 uses their book 1 unit id, so we need to check before replacing.
                             if(temp->portrait == 0x12 && temp->unit == 0x79)
                             {
-                                //Samto is a specia case, need to double check to not mess up his stats
+                                //Samto is a special case, need to double check to not mess up his stats
                                 *unit = characters[characters[0x70].book2_replacement].book2_stats;
                             }
                             else
@@ -193,17 +183,7 @@ int Mystery::SetUnits(unsigned int offset, uint8_t replacement, uint8_t original
                     else
                     {
                         temp->unit_class = assign_class;
-                        /*
-                        if(assign_class == 0x14)
-                        {
-                            //std::cout << std::hex << (int) assign_class << std::endl;
-                            temp->mountedClass = assign_class;
-                        }*/
                     }
-    //                 if(assign_class == 0x14)
-    //                 {
-    //                     std::cout << std::hex << (int) temp->mountedClass << std::endl;
-    //                 }
                     if(!class_list[assign_class].mounted && temp->mountedClass != 0xFF)
                     {
                         temp->mountedClass = 0xFF;
@@ -216,11 +196,6 @@ int Mystery::SetUnits(unsigned int offset, uint8_t replacement, uint8_t original
                         unit_name_offset *= 2;
                         unit_name_offset += m_RomData.getPCAddress("UNIT_NAME_TABLE");
                         uint8_t old_name = book_2_est ? 0x2A : romData[unit_name_offset];
-//                         if(temp->unit == 0xc || temp->unit == 0x21)
-//                         {
-//                             cout << std::hex << LoROMToPC(offset) << endl;
-// 
-//                         }
                         if(old_name != temp->name && old_name != 0xFF && !fake_navarre)
                         {
                             if(book == 1 && characters[old_name].book1_unit == 0xFF)
@@ -312,19 +287,20 @@ int Mystery::SetUnits(unsigned int offset, uint8_t replacement, uint8_t original
                                     }
                                 }   
                             }
-    //                         
                         }
                         i++;
                     }
                     if(inventory[0] == 0xFF)
                     {
+                        // Wanted to avoid replacing the staff that Julian comes with in Book 2.
                         if(inventory[4] != 0xFF && item_list[inventory[4]].item_stats.type == STAFF && newType != STAFF)
                         {
                             inventory[0] = ReplaceItem(inventory[4], newType, wlv );
                         }
                         else
                         {
-                            
+                            // I can't remember what this is for.
+                            // 0x57 is the code for Vulneraries.
                             if(inventory[4] == 0xFF || inventory[4] == 0x57)
                             {
                                 
@@ -353,13 +329,6 @@ int Mystery::SetUnits(unsigned int offset, uint8_t replacement, uint8_t original
                     {
                         unsigned short prf_item = characters[temp->name].prf_item;
                         bool thisBook = (book & ((prf_item & 0xFF00) >>8) ) == book;
-    //                     if(temp->name == 0x1f && prf_item != 0 )
-    //                     {
-    //                         std::cout << item_list[prf_item].name << std::endl;
-    //                         std::cout << std::hex << (prf_item & 0xFF) << std::endl;
-    //                         std::cout << std::hex << (int)temp->name << std::endl;
-    //                         std::cout << std::hex << (int)(book & ((prf_item & 0xFF00) >>8) ) << std::endl;
-    //                     }
                         if(thisBook)
                         {
                             uint8_t prf = prf_item & 0xFF;
@@ -420,10 +389,16 @@ int Mystery::SetUnits(unsigned int offset, uint8_t replacement, uint8_t original
                     if( transform_count <= 30 && (temp->unit_class == 0x1C || temp->unit_class == 0x0F || temp->unit_class == 0x14) )
                     {
                         romData[m_RomData.getPCAddress("TRANSFORMERS_FIX") + transform_count] = temp->unit;
-                        //std::cout << transform_count << std::endl;
-                        //std::cout << std::hex << (int)temp->unit << std::endl;
                         transform_count += 5;
                         
+                    }
+                    // Elice and Maria have attacking AI in vanilla FE3. They don't have weapons in vanilla so it dooesn't affect gameplay.
+                    // But if their replacesments get weapons, they will attack the player if the AI isn't changed.
+                    // Here I just set the AI to the same as Nyna and Lena.
+                    if ( temp->ai1 != 0xFF && (temp->unit == 0xA9 || temp->unit == 0xA8) )
+                    {
+                        temp->ai1 = 1;
+                        temp->ai2 = 3;
                     }
                 }
             }
