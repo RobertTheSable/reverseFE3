@@ -244,6 +244,10 @@ void Mystery::ApplyFixes()
         {m_RomData.getPCAddress("DEATH_CHECK_B1"), 1, 2},
         {m_RomData.getPCAddress("DEATH_CHECK_B2"). 2, 6}
     };
+    
+    // the Caeda, Tiki, and Maalicia flags probably should be changed
+    // since most likely they nly affect the ending
+    // but I'm too lazy to check if they're used for anything else
     for (auto& baseOffset: deathOffsets) {
         auto address = baseOffset.address + 1;
         for (int idx = 0; idx < baseOffset.count; ++idx) {
