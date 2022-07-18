@@ -234,6 +234,28 @@ void Mystery::ApplyFixes()
              romData[offset + unit_idx] = characters[unit_name].book2_unit;
         }
     }
+    
+    struct DeathChecks {
+        int address;
+        int book;
+        int count;
+    };
+    DeathChecks deathOffsets[] = {
+        {m_RomData.getPCAddress("DEATH_CHECK_B1"), 1, 2},
+        {m_RomData.getPCAddress("DEATH_CHECK_B2"). 2, 6}
+    };
+    for (auto& baseOffset: deathOffsets) {
+        auto address = baseOffset.address + 1;
+        for (int idx = 0; idx < baseOffset.count; ++idx) {
+            int oldName = romData[address];
+            if (baseOffset.book == 1) {
+                romData[address] = characters[oldName].book1_replacement
+            } else {
+                romData[address] = characters[oldName].book2_replacement
+            }
+            address += 5;
+        }
+    }
 } 
 
 /*
