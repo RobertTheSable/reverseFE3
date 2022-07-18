@@ -242,7 +242,7 @@ void Mystery::ApplyFixes()
     };
     DeathChecks deathOffsets[] = {
         {m_RomData.getPCAddress("DEATH_CHECK_B1"), 1, 2},
-        {m_RomData.getPCAddress("DEATH_CHECK_B2"). 2, 6}
+        {m_RomData.getPCAddress("DEATH_CHECK_B2"), 2, 6}
     };
     
     // the Caeda, Tiki, and Maalicia flags probably should be changed
@@ -253,9 +253,9 @@ void Mystery::ApplyFixes()
         for (int idx = 0; idx < baseOffset.count; ++idx) {
             int oldName = romData[address];
             if (baseOffset.book == 1) {
-                romData[address] = characters[oldName].book1_replacement
+                romData[address] = characters[oldName].book1_replacement;
             } else {
-                romData[address] = characters[oldName].book2_replacement
+                romData[address] = characters[oldName].book2_replacement;
             }
             address += 5;
         }
