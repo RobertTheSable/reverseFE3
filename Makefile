@@ -1,5 +1,5 @@
 CC = g++
-FLAGS = -g -c -std=c++11
+FLAGS = -g -c -std=c++17
 
 SOURCEDIR = src
 BUILDDIR = build

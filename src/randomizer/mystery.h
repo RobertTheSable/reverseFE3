@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <optional>
 
 #define RANDOM_THIEFS 1
 #define RANDOM_SPECIAL 2
@@ -20,6 +21,11 @@
 
 enum Promotion_Type {NO_PROMOTION, PROMOTES, PROMOTED};
 enum Class_Type {NORMAL, THIEF, SPECIAL, DANCER, ENEMY, TEMP, DRAGON, RESTRICTED};
+
+struct DeathQuote {
+    int chapter;
+    uint8_t textIndex[2];
+};
 
 struct MysteryCharacter{
         uint8_t name_id;
@@ -42,6 +48,7 @@ struct MysteryCharacter{
         bool book2_set;
         unsigned short prf_item;
         int join_point[2];
+        std::optional<DeathQuote> quotes[2];
 };
 
 struct MysteryClass{

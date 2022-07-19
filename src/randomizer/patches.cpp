@@ -260,6 +260,104 @@ void Mystery::ApplyFixes()
             address += 5;
         }
     }
+
+    int BASE_CONDITION_OFFSET = m_RomData.getAddress("BASE_CONDITION_POINTER");
+    int deathEvtTable = m_RomData.getAddress("DEATH_EVT_TABLE");
+    for (int idx = 0; idx < 2 ; ++idx) {
+         int address = 0x8B0000 + *( (uint16_t*)&m_RomData[deathEvtTable + (idx*2)]);
+         std::cout << "Table: " << std::hex << address << '\n';
+         while (m_RomData[address] != 0xFF) {
+             auto cNum = m_RomData[address];
+             if (characters.find(cNum) != characters.end()) {
+                 int condition = m_RomData[address+1];
+                 bool isBaseMsg = true;
+                 int chapter = -1;
+                 uint8_t extraUnit = cNum;
+                 if (condition != 0xFF) {
+                     int conditionAddress = BASE_CONDITION_OFFSET +  (condition * 3);
+                     conditionAddress = 0x8C0000 + *( (uint16_t*)&m_RomData[conditionAddress]);
+                     while (m_RomData[conditionAddress] != 0xFF) {
+                         bool setUnit = false;
+                         uint8_t conditionUnitName = cNum;
+                         switch (m_RomData[conditionAddress]) {
+                         case 0:
+                             // items
+                             conditionAddress += 2;
+                             std::cout << " test\n";
+                             isBaseMsg = false;
+                             break;
+                         case 1:
+                             // flag-based
+                             conditionAddress += 3;
+                             std::cout << " test\n";
+                             isBaseMsg = false;
+                             break;
+                         case 2:
+                              // player unit
+                              std::cout << " test\n";
+                              conditionAddress += 2;
+                              isBaseMsg = false;
+                              break;
+                         case 3:
+                               // any unit
+                               extraUnit = m_RomData[conditionAddress+1];
+                               setUnit = true;
+                               // should just be some extra death quotes for marth if Caeda or Jagen are dead
+                               conditionUnitName = m_RomData[m_RomData.getAddress("UNIT_NAME_TABLE") + (extraUnit*2)];
+                               if (extraUnit <=32) {
+                                   m_RomData[conditionAddress+1] = characters[conditionUnitName].book1_unit;
+                               } else {
+                                   m_RomData[conditionAddress+1] = characters[conditionUnitName].book2_unit;
+                               }
+                               conditionAddress += 2;
+                               isBaseMsg = false;
+                               break;
+                         case 4:
+                               // checks for and removes items?
+                               conditionAddress += 2;
+                               isBaseMsg = false;
+                               std::cout << " test\n";
+                               break;
+                         case 5:
+                         default:
+                              // chapter
+                              chapter = m_RomData[conditionAddress+1] - 1;
+                              conditionAddress += 2;
+                              break;
+                         }
+                     }
+                 }
+
+                 if (idx == 0) {
+                    if (isBaseMsg) {
+                        if (chapter < 0 || !characters[cNum].book1_set) {
+                            characters[cNum].quotes[1] = DeathQuote{chapter, {m_RomData[address+2], m_RomData[address+3]}};
+                        } else if (chapter <= 20 || !characters[cNum].book2_set) {
+                            characters[cNum].quotes[0] = DeathQuote{chapter, {m_RomData[address+2], m_RomData[address+3]}};
+                        }
+                    }
+                 } else {
+                    // Ideally I should have some better way to distinguish book1/2 only bosses
+                    // but this hack works well enough
+                    uint8_t replCharNum = cNum;
+                    int book = 0;
+                    if (chapter >=0 && chapter <= 20) {
+                        replCharNum = characters[cNum].book1_replacement;
+                        book = 0;
+                    } else if (characters[cNum].book2_set) {
+                        replCharNum = characters[cNum].book2_replacement;
+                        book = 1;
+                    }
+                    if (replCharNum != cNum && characters[replCharNum].quotes[book] != std::nullopt) {
+                        m_RomData[address] = replCharNum;
+                        m_RomData[address + 2] = characters[replCharNum].quotes[book]->textIndex[0];
+                        m_RomData[address + 3] = characters[replCharNum].quotes[book]->textIndex[1];
+                    }
+                 }
+             }
+             address += 4;
+         }
+    }
 } 
 
 /*
