@@ -348,6 +348,9 @@ void Mystery::ApplyFixes()
                         replCharNum = characters[cNum].book2_replacement;
                         book = 1;
                     }
+                    
+                    // Wolf will technically use his book 2 quote in book 1
+                    // But they're identical, so it shouldn't matter.
                     if (replCharNum != cNum && characters[replCharNum].quotes[book] != std::nullopt) {
                         m_RomData[address] = replCharNum;
                         m_RomData[address + 2] = characters[replCharNum].quotes[book]->textIndex[0];
