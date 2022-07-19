@@ -61,7 +61,7 @@ void Mystery::Relevel(uint8_t replacement, uint8_t original, int promo_level, in
                 {
                     stat = 2000;
                 }
-                else if(i != 6 && stat >= 5200)
+                else if(i == 6 && stat >= 5200)
                 {
                     stat = 5200;
                 }
