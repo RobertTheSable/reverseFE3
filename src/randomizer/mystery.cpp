@@ -6,7 +6,7 @@ using std::endl;
 //TODO: identify character by portrait and name?
 //some cutscene characters such as Gotoh in Chapter 17 use the name of a player character
 
-Mystery::Mystery(RomMap& map)
+Mystery::Mystery(RomMap& map, const bool& textOff): noText(textOff)
 {
     //do initial configuration to assign names and set character order
     std::ifstream charCfg("characters.ini");

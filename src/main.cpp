@@ -13,10 +13,11 @@ int main(int argc, char *argv[])
 {
     if(argc >= 2)
     {
+        bool disableText = argc > 2;
         int character_settings = Mystery::sort_reverse|Mystery::sort_reverse_2;
         RomMap a(argv[1]);
 
-        Mystery myGame(a);
+        Mystery myGame(a, disableText);
 
         myGame.SortCharacters(character_settings);
         myGame.SetStats(true);

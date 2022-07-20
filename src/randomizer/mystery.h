@@ -80,7 +80,7 @@ public:
     static const sortmode sort_sync_2 = 32;
     static const sortmode treat_same = 64;
     
-    Mystery(RomMap& map);
+    Mystery(RomMap& map, const bool& ntextOff = false);
     ~Mystery();
     void SortCharacters(const sortmode& mode);
     void SetClasses(const int& mode);
@@ -93,6 +93,8 @@ private:
      int romSize;
      uint8_t *romData;
      RomMap m_RomData;
+
+     bool noText;
      
      std::map<uint8_t, MysteryCharacter> characters;
      std::vector<uint8_t> book1Order;

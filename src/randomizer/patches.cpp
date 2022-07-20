@@ -144,7 +144,7 @@ void Mystery::ApplyFixes()
             }
             else
             {
-                if(event_code == 0x02)
+                if(!noText && event_code == 0x02)
                 {
                     int text_idx = *((unsigned short*)&romData[event_pc_addr + 1]);
                     ParseText(text_idx, chapter);
@@ -179,6 +179,17 @@ void Mystery::ApplyFixes()
         }
         offset += VILLAGE_LENGTH;
     }
+
+    if (noText) {
+        // the game has a check for the "Play Opening" option
+        // notmally it branches unless that option is picked
+        // here, I'm replacing that branch with NOPs so that text is always skipped.
+        unsigned int offset =  m_RomData.getAddress("TEXT_SKIP_ADDRESS");
+        for (int i = 0; i < 2; ++i) {
+            m_RomData[offset + i] = 0xEA;
+        }
+    }
+
     //text id is offset 5, word
     offset =  m_RomData.getPCAddress("BATTLE_EVT_TABLE");
     while(romData[offset] != 0xFF)
